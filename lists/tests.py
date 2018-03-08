@@ -1,7 +1,8 @@
 from django.test import TestCase
 from lists.models import Item, List
 
-class ListAndItemModelTest(TestCase):
+
+class ListAndItemModelsTest(TestCase):
     def test_saving_and_retreiving_items(self):
         list_ = List()
         list_.save()
@@ -11,12 +12,13 @@ class ListAndItemModelTest(TestCase):
         first_item.list = list_
         first_item.save()
 
-        saved_list = List.objects.first()
-        self.assertEqual(saved_list, list_)
-
         second_item = Item()
         second_item.text = 'Item the second'
+        second_item.list = list_
         second_item.save()
+
+        saved_list = List.objects.first()
+        self.assertEqual(saved_list, list_)
 
         saved_items = Item.objects.all()
         self.assertEqual(saved_items.count(), 2)
@@ -39,13 +41,9 @@ class ListViewTest(TestCase):
         self.assertTemplateUsed(response, 'list.html')
 
     def test_displays_all_items(self):
-        Item.objects.create(text='itemey 1')
-        Item.objects.create(text='itemey 2')
-
-        response = self.client.get('/lists/the-only-list-in-the-world/')
-
-        self.assertContains(response, 'itemey 1')  
-        self.assertContains(response, 'itemey 2')
+        list_ = List.objects.create()
+        Item.objects.create(text='itemey 1', list=list_)
+        Item.objects.create(text='itemey 2', list=list_)
 
 class NewListTest(TestCase):
     def test_can_save_a_POST_request(self):
